@@ -5,7 +5,12 @@ bft is an optimizing modular brainf*ck transpiler which currently has backends f
 * JavaScript
 
 ## Building
-To build bft, ensure that you have the CMake and Boost program options library installed. Then run `./build.sh {{Debug or Release}}`
+Dependencies:
+* CMake
+* Make
+* Boost program options
+
+To build bft, run `./build.sh {{Debug or Release}}`
 
 ## Running
 To transpile a brainf*ck program, simply run `bft {{input file}} -o {{output file}} --target={{target language}}`
