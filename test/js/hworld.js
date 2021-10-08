@@ -13,8 +13,8 @@ const getchar = () => {
     }))
 }
 
-const putchar = (char) => {
-	process.stdout.write(String.fromCharCode(char));
+const putchar = (char, iters = 1) => {
+	process.stdout.write(String.fromCharCode(char).repeat(iters));
 }
 
 
@@ -23,25 +23,74 @@ const main = async () => {
 	const bf_array = new Array(bf_array_len);
 	while(--bf_ptr) bf_array[bf_ptr] = 0;
 	bf_array[0] = 0;
-	bf_array[bf_ptr] += 10;
+	bf_ptr += 1;
+	bf_array[bf_ptr] += 8;
 	while(bf_array[bf_ptr]){
+		bf_ptr -= 1;
+		bf_array[bf_ptr] += 9;
 		bf_ptr += 1;
-		bf_array[bf_ptr] += 7;
-		bf_ptr += 1;
-		bf_array[bf_ptr] += 10;
-		bf_ptr += 1;
-		bf_array[bf_ptr] += 3;
-		bf_ptr += 1;
-		bf_array[bf_ptr] += 1;
-		bf_ptr -= 4;
 		bf_array[bf_ptr] -= 1;
 	}
+	bf_ptr -= 1;
+	putchar(bf_array[bf_ptr], 1);
 	bf_ptr += 1;
+	bf_array[bf_ptr] += 4;
+	while(bf_array[bf_ptr]){
+		bf_ptr -= 1;
+		bf_array[bf_ptr] += 7;
+		bf_ptr += 1;
+		bf_array[bf_ptr] -= 1;
+	}
+	bf_ptr -= 1;
+	bf_array[bf_ptr] += 1;
+	putchar(bf_array[bf_ptr], 1);
+	bf_array[bf_ptr] += 7;
+	putchar(bf_array[bf_ptr], 2);
+	bf_array[bf_ptr] += 3;
+	putchar(bf_array[bf_ptr], 1);
+	bf_ptr += 2;
+	bf_array[bf_ptr] += 6;
+	while(bf_array[bf_ptr]){
+		bf_ptr -= 1;
+		bf_array[bf_ptr] += 7;
+		bf_ptr += 1;
+		bf_array[bf_ptr] -= 1;
+	}
+	bf_ptr -= 1;
 	bf_array[bf_ptr] += 2;
-	putchar(bf_array[bf_ptr]);
-	bf_array[bf_ptr] = await getchar();
-	bf_array[bf_ptr] += 2;
-	putchar(bf_array[bf_ptr]);
+	putchar(bf_array[bf_ptr], 1);
+	bf_array[bf_ptr] -= 12;
+	putchar(bf_array[bf_ptr], 1);
+	bf_ptr += 1;
+	bf_array[bf_ptr] += 6;
+	while(bf_array[bf_ptr]){
+		bf_ptr -= 1;
+		bf_array[bf_ptr] += 9;
+		bf_ptr += 1;
+		bf_array[bf_ptr] -= 1;
+	}
+	bf_ptr -= 1;
+	bf_array[bf_ptr] += 1;
+	putchar(bf_array[bf_ptr], 1);
+	bf_ptr -= 1;
+	putchar(bf_array[bf_ptr], 1);
+	bf_array[bf_ptr] += 3;
+	putchar(bf_array[bf_ptr], 1);
+	bf_array[bf_ptr] -= 6;
+	putchar(bf_array[bf_ptr], 1);
+	bf_array[bf_ptr] -= 8;
+	putchar(bf_array[bf_ptr], 1);
+	bf_ptr += 3;
+	bf_array[bf_ptr] += 4;
+	while(bf_array[bf_ptr]){
+		bf_ptr -= 1;
+		bf_array[bf_ptr] += 8;
+		bf_ptr += 1;
+		bf_array[bf_ptr] -= 1;
+	}
+	bf_ptr -= 1;
+	bf_array[bf_ptr] += 1;
+	putchar(bf_array[bf_ptr], 1);
 
 }
 

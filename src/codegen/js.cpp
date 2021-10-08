@@ -18,8 +18,8 @@ const getchar = () => {
     }))
 }
 
-const putchar = (char) => {
-	process.stdout.write(String.fromCharCode(char));
+const putchar = (char, iters = 1) => {
+	process.stdout.write(String.fromCharCode(char).repeat(iters));
 }
 
 
@@ -95,8 +95,7 @@ void codegen_js::generate(asc_node* node_){
 		break;
 
 		case put_char:
-		for(size_t i = 0; i < node_->iterations; i++)
-			code_stream_fmt() << "putchar(bf_array[bf_ptr]);\n";
+		code_stream_fmt() << "putchar(bf_array[bf_ptr], " << node_->iterations << ");\n";
 		break;
 
 		case get_char:

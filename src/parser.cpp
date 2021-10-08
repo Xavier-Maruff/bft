@@ -87,12 +87,6 @@ void parser::optimize_asc(){
             target_node = target_node->next.get();
             if(!target_node) break;
             target_node_type = target_node->node_type;
-            //while(std::find(non_reducables.begin(), non_reducables.end(), target_node_type) != non_reducables.end()){
-            //    target_node = target_node->next.get();
-            //    if(!target_node) break;
-            //    target_node_type = target_node->node_type;
-            //}
-            //if(!target_node) break;
         }
         next_node = target_node->next.get();
     }
