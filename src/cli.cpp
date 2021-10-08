@@ -31,7 +31,7 @@ cli_args::~cli_args(){
 cli_args parse_args(int argc, char* argv[]){
     cli_args retval;
     //options
-    po::options_description desc("BFT - a multi-target optimizing brainf*ck transpiler");
+    po::options_description desc("\nBFT - a multi-target optimizing brainf*ck transpiler");
     desc.add_options()
         ("help,h", "show this help message")
         ("verbose,v", "increase verbosity")
