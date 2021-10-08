@@ -2,7 +2,7 @@
 ## A multi-target brainf*ck transpiler
 bft is an optimizing modular brainf*ck transpiler which currently has backends for:
 * C
-* JavaScript
+* JavaScript for the NodeJS runtime
 * Rust
 
 ## Building
