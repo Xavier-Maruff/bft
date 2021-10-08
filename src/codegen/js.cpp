@@ -1,4 +1,6 @@
 #include "js.hpp"
+#include "../log.hpp"
+#include "../err_codes.h"
 
 #define BF_ARRAY_SIZE 30000
 
@@ -37,16 +39,12 @@ main();
 };
 
 codegen_js::codegen_js(std::deque<size_t> loop_stack_) noexcept:
-codegen(loop_stack_), indent_level(1){
-    //
+codegen(loop_stack_){
+    indent_level = 1;
 }
 
 codegen_js::~codegen_js() noexcept{
     //
-}
-
-inline std::ostream& codegen_js::code_stream_fmt() noexcept {
-    return code_stream << std::string(indent_level, '\t');
 }
 
 void codegen_js::dump_code(std::ostream* code_output) const noexcept{
@@ -82,6 +80,10 @@ void codegen_js::generate(asc_node* node_){
 		break;
 
 		case loop_start:
+		if(open_loop_stack.size() >= open_loop_stack.max_size()){
+			stdlog.err() << "Deque stack passed max size (" << open_loop_stack.max_size() << ")" << std::endl;
+			throw MEM_ERR;
+		}
 		open_loop_stack.push_back(loop_stack.back());
 		loop_stack.pop_back();
 		code_stream_fmt() << "while(bf_array[bf_ptr]){\n";

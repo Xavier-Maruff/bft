@@ -3,7 +3,7 @@
 #include "../log.hpp"
 
 codegen::codegen(std::deque<size_t> loop_stack_) noexcept:
-loop_stack(loop_stack_){
+loop_stack(loop_stack_), indent_level(0){
     //
 }
 

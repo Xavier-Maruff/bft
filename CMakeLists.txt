@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(bft VERSION 1.0 DESCRIPTION "Multi-target brainf*ck transpiler")
+project(bft VERSION 1.0 DESCRIPTION "Multi-target optimizing brainf*ck transpiler")
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -15,8 +15,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 
-find_package( Boost COMPONENTS program_options REQUIRED )
-include_directories( ${Boost_INCLUDE_DIR} )
+find_package(Boost COMPONENTS program_options REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
 link_libraries(${Boost_LIBRARIES})
 
 add_executable(bft
@@ -28,4 +28,5 @@ add_executable(bft
     ${CMAKE_SOURCE_DIR}/src/codegen/codegen.cpp
     ${CMAKE_SOURCE_DIR}/src/codegen/c.cpp
     ${CMAKE_SOURCE_DIR}/src/codegen/js.cpp
+    ${CMAKE_SOURCE_DIR}/src/codegen/rust.cpp
 )

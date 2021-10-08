@@ -13,6 +13,9 @@ class codegen {
     std::stringstream code_stream;
     std::deque<size_t> loop_stack;
     std::deque<size_t> open_loop_stack;
+    
+    size_t indent_level;
+    inline std::ostream& code_stream_fmt() noexcept;
 
     public:
     codegen(std::deque<size_t> loop_stack_) noexcept;
@@ -23,5 +26,9 @@ class codegen {
     virtual void generate(asc_node* node_) = 0;
 
 };
+
+inline std::ostream& codegen::code_stream_fmt() noexcept {
+	return code_stream << std::string(indent_level, '\t');
+}
 
 #endif

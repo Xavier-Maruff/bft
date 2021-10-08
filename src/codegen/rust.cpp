@@ -1,43 +1,36 @@
-#include "./c.hpp"
+#include "rust.hpp"
 #include "../log.hpp"
 #include "../err_codes.h"
 
-#include <map>
-#include <functional>
-
-
-#define BF_ARRAY_SIZE 30000
-#define ERR_PREFIX "C backend -> "
-
-std::pair<std::string, std::string> codegen_c::skeleton = {
-    R"(#include <stdio.h>
-
-int main(int argc, char* argv[]){
-	int bf_array[)"+std::to_string(BF_ARRAY_SIZE)+R"(] = {0};
-	int* bf_ptr = bf_array;
-	)",
-	R"(
-	return 0;
+std::pair<std::string, std::string> codegen_rust::skeleton = {
+    R"(
+fn main() {
+	let mut bf_array: [i32; 30000] = [0; 30000];
+	let mut bf_ptr: usize = 0;
+	unsafe {
+)",
+    R"(
+	}
 }
-    )"
+	)"
 };
 
-codegen_c::codegen_c(std::deque<size_t> loop_stack_) noexcept:
+codegen_rust::codegen_rust(std::deque<size_t> loop_stack_) noexcept:
 codegen(loop_stack_) {
-    indent_level = 1;
+    indent_level = 2;
 }
 
-codegen_c::~codegen_c() noexcept{
+codegen_rust::~codegen_rust() noexcept{
     //
 }
 
-void codegen_c::dump_code(std::ostream* code_output) const noexcept {
+void codegen_rust::dump_code(std::ostream* code_output) const noexcept {
     *code_output << skeleton.first;
     *code_output << code_stream.rdbuf();
     *code_output << skeleton.second;
 }
 
-std::string codegen_c::dump_code_string() const noexcept {
+std::string codegen_rust::dump_code_string() const noexcept {
     std::stringstream code_output;
     code_output << skeleton.first;
     code_output << code_stream.rdbuf();
@@ -45,7 +38,7 @@ std::string codegen_c::dump_code_string() const noexcept {
     return code_output.str();
 }
 
-void codegen_c::generate(asc_node* node_) {
+void codegen_rust::generate(asc_node* node_) {
     switch(node_->node_type){
         case inc_ptr:
         code_stream_fmt() << "bf_ptr += " << node_->iterations << ";\n";
@@ -56,11 +49,11 @@ void codegen_c::generate(asc_node* node_) {
 		break;
 
 		case inc_val:
-		code_stream_fmt() << "*bf_ptr += " << node_->iterations << ";\n";
+		code_stream_fmt() << "bf_array[bf_ptr] += " << node_->iterations << ";\n";
 		break;
 
 		case dec_val:
-		code_stream_fmt() << "*bf_ptr-= " << node_->iterations << ";\n";
+		code_stream_fmt() << "bf_array[bf_ptr] -= " << node_->iterations << ";\n";
 		break;
 
 		case loop_start:
@@ -70,7 +63,7 @@ void codegen_c::generate(asc_node* node_) {
 		}
 		open_loop_stack.push_back(loop_stack.back());
 		loop_stack.pop_back();
-		code_stream_fmt() << "while(*bf_ptr){\n";
+		code_stream_fmt() << "while bf_array[bf_ptr] > 0 {\n";
 		indent_level++;
 		break;
 
@@ -82,12 +75,12 @@ void codegen_c::generate(asc_node* node_) {
 
 		case put_char:
 		for(size_t i = 0; i < node_->iterations; i++)
-			code_stream_fmt() << "putchar(*bf_ptr);\n";
+			code_stream_fmt() << "libc::putchar(bf_array[bf_ptr]);\n";
 		break;
 
 		case get_char:
 		for(size_t i = 0; i < node_->iterations; i++)
-			code_stream_fmt() << "*bf_ptr = getchar();\n";
+			code_stream_fmt() << "bf_array[bf_ptr] = libc::getchar();\n";
 		break;
 
 		default:

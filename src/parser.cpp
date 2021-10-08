@@ -1,5 +1,5 @@
 #include <set>
-#include <unordered_map>
+#include <map>
 
 #include "parser.hpp"
 #include "log.hpp"
@@ -16,7 +16,7 @@ parser::~parser() noexcept{
     //
 }
 
-std::unordered_map<char, bf_instr> token_map = {
+std::map<char, bf_instr> token_map = {
     {'>', inc_ptr},
     {'<', dec_ptr},
     {'+', inc_val},
@@ -87,6 +87,13 @@ void parser::optimize_asc(){
             target_node = target_node->next.get();
             if(!target_node) break;
             target_node_type = target_node->node_type;
+
+            while(target_node->node_type == loop_start || target_node->node_type == loop_end){
+                target_node = target_node->next.get();
+                if(!target_node) break;
+                target_node_type = target_node->node_type;
+            }
+            if(!target_node) break;
         }
         next_node = target_node->next.get();
     }
@@ -102,6 +109,10 @@ void parser::generate_code(compile_target code_lang, std::ostream* output_stream
 
         case target_js:
         backend = std::make_unique<codegen_js>(loop_stack);
+        break;
+
+        case target_rust:
+        backend = std::make_unique<codegen_rust>(loop_stack);
         break;
 
         default:
