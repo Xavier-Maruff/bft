@@ -36,8 +36,8 @@ cli_args parse_args(int argc, char* argv[]){
         ("help,h", "show this help message")
         ("verbose,v", "increase verbosity")
         ("output,o", po::value<std::string>(), "output asm file path")
-        ("target", po::value<std::string>(), "the target language (js, c, rust, c++)")
-        ("source", po::value<std::string>(), "source bf file path")
+        ("target,t", po::value<std::string>(), "the target language (js, c, rust, c++)")
+        ("source,s", po::value<std::string>(), "source bf file path")
     ;
 
     po::positional_options_description pos_desc;
