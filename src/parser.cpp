@@ -8,7 +8,8 @@
 
 #define ERR_PREFIX "parser -> "
 
-parser::parser() noexcept{
+parser::parser(std::string output_filename_) noexcept:
+output_filename(output_filename_){
     //
 }
 
@@ -113,6 +114,10 @@ void parser::generate_code(compile_target code_lang, std::ostream* output_stream
 
         case target_rust:
         backend = std::make_unique<codegen_rust>(loop_stack);
+        break;
+
+        case target_ada:
+        backend = std::make_unique<codegen_ada>(loop_stack, output_filename);
         break;
 
         default:

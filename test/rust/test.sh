@@ -9,3 +9,4 @@ echo "
 ./mandelbrot
 echo "
 "
+rm -rf ./hworld* ./mandelbrot*

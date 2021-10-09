@@ -13,11 +13,12 @@
 class parser{
     std::unique_ptr<asc_node> root_node;
     std::stringstream bf_asm;
+    std::string output_filename;
 
     std::deque<size_t> loop_stack;
 
     public:
-    parser() noexcept;
+    parser(std::string output_filename_) noexcept;
     virtual ~parser() noexcept;
 
     void tokenize(std::istream* input_stream);

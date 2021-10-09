@@ -11,7 +11,7 @@ namespace po = boost::program_options;
 std::map<std::string, compile_target> target_from_str = {
     {"js", target_js},
     {"c", target_c},
-    {"c++", target_cpp},
+    {"ada", target_ada},
     {"rust", target_rust}
 };
 

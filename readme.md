@@ -4,10 +4,11 @@ bft is an optimizing modular brainf*ck transpiler which currently has backends f
 * C
 * JavaScript for the NodeJS runtime
 * Rust
+* Ada
 
 ## Command line options
 bft accepts the following command-line arguments:
-* --target={js, rust, or c}, -t {js, rust, or c} -> the transpilation target langauge
+* --target={js, rust, c, or ada}, -t {js, rust, c, or ada} -> the transpilation target langauge
 * positional, --source={source file}, -s {source file} -> the source brainf*ck file
 * --verbose, -v -> increases the logging verbosity
 * --output={output file}, -o {output file} -> the transpiled output file
@@ -28,6 +29,7 @@ Examples:
 bft input.bf -o output.js --target=js
 bft input.bf -o output.c --target=c
 bft input.bf -o output.rs --target=rust
+bft input.bf -o output.adb --target=ada
 ```
 
 ## Testing

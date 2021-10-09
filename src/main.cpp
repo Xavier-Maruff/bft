@@ -18,7 +18,7 @@ int main(int argc, char* argv[]){
             throw IO_ERR;
         }
 
-        parser bf_parser;
+        parser bf_parser(args.output_filename);
 
         bf_parser.tokenize(&bf_source_file);
         bf_source_file.close();

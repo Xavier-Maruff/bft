@@ -13,4 +13,8 @@ Running Rust target"
 cd ../rust
 ./test.sh
 echo "
+Running Ada target"
+cd ../ada
+./test.sh
+echo "
 Testing finished"

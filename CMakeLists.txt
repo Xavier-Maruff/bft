@@ -29,4 +29,5 @@ add_executable(bft
     ${CMAKE_SOURCE_DIR}/src/codegen/c.cpp
     ${CMAKE_SOURCE_DIR}/src/codegen/js.cpp
     ${CMAKE_SOURCE_DIR}/src/codegen/rust.cpp
+    ${CMAKE_SOURCE_DIR}/src/codegen/ada.cpp
 )
