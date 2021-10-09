@@ -12,7 +12,8 @@ std::map<std::string, compile_target> target_from_str = {
     {"js", target_js},
     {"c", target_c},
     {"ada", target_ada},
-    {"rust", target_rust}
+    {"rust", target_rust},
+    {"fortran", target_fortran}
 };
 
 cli_args::cli_args():

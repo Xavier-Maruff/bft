@@ -17,4 +17,8 @@ Running Ada target"
 cd ../ada
 ./test.sh
 echo "
+Running Fortran target"
+cd ../fortran
+./test.sh
+echo "
 Testing finished"

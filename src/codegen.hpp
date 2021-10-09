@@ -6,6 +6,7 @@
 #include "codegen/js.hpp"
 #include "codegen/rust.hpp"
 #include "codegen/ada.hpp"
+#include "codegen/fortran.hpp"
 
 
 #endif

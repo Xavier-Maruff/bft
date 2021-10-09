@@ -7,7 +7,8 @@ enum compile_target {
     target_js,
     target_c,
     target_rust,
-    target_ada
+    target_ada,
+    target_fortran
 };
 
 typedef struct cli_args {

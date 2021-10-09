@@ -30,4 +30,5 @@ add_executable(bft
     ${CMAKE_SOURCE_DIR}/src/codegen/js.cpp
     ${CMAKE_SOURCE_DIR}/src/codegen/rust.cpp
     ${CMAKE_SOURCE_DIR}/src/codegen/ada.cpp
+    ${CMAKE_SOURCE_DIR}/src/codegen/fortran.cpp
 )

@@ -120,6 +120,10 @@ void parser::generate_code(compile_target code_lang, std::ostream* output_stream
         backend = std::make_unique<codegen_ada>(loop_stack, output_filename);
         break;
 
+        case target_fortran:
+        backend = std::make_unique<codegen_fortran>(loop_stack, output_filename);
+        break;
+
         default:
         stdlog.err() << ERR_PREFIX << "Unrecognised compilation target" << std::endl;
         throw PARSE_ERR;
