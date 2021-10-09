@@ -35,7 +35,7 @@ bft input.bf -o output.f90 --target=fortran
 ```
 
 ## Testing
-Run the `test.sh` script to run the C, JavaScript, and Rust tests. DISCLAIMER: You will need to modify the `libc` crate path in the `test/rust/test.sh` script for rustc to correctly include it, see the *Rust notes* section below
+Run the `test.sh` script to run the C, JavaScript, Rust, Ada, and Fortran tests. DISCLAIMER: You will need to modify the `libc` crate path in the `test/rust/test.sh` script for rustc to correctly include it, see the *Rust notes* section below
 
 ## Rust notes
 The rust target references the `libc` crate, so to compile either create a Cargo project and add `libc` to the dependencies, or compile with `rustc` with `--extern libc={path to libc rlib}`
