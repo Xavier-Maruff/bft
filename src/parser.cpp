@@ -107,8 +107,12 @@ void parser::zero_loop(){
     asc_node* current_node = prior_node->next.get();
     if(!current_node) return;
     asc_node* next_node = current_node->next.get();
+    bool zero_loop = false;
     while(next_node){
-        if(prior_node->node_type == loop_start && current_node->node_type == dec_val && next_node->node_type == loop_end){
+        zero_loop = prior_node->node_type == loop_start
+            && (current_node->node_type == dec_val || current_node->node_type == inc_val)
+            && next_node->node_type == loop_end;
+        if(zero_loop){
             prior_node->node_type = zero_assign;
             prior_node->next = std::move(next_node->next);
             current_node = prior_node->next.get();
