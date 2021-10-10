@@ -8,8 +8,8 @@
 
 #define ERR_PREFIX "parser -> "
 
-parser::parser(std::string output_filename_) noexcept:
-output_filename(output_filename_){
+parser::parser(std::string output_filename_, uint8_t optimization_level_) noexcept:
+output_filename(output_filename_), optimization_level(optimization_level){
     //
 }
 
@@ -68,10 +68,7 @@ void parser::tokenize(std::istream* input_stream) {
     }
 }
 
-//std::set<bf_instr> non_reducables = {loop_start, loop_end, put_char, get_char};
-
-void parser::optimize_asc(){
-    //compress repeating asc nodes
+void parser::contract_repeating_nodes(){
     asc_node* target_node = root_node.get();
     if(!target_node) {
         stdlog.err() << "Null ASC" << std::endl;
@@ -98,6 +95,37 @@ void parser::optimize_asc(){
         }
         next_node = target_node->next.get();
     }
+}
+
+
+void parser::zero_loop(){
+    asc_node* prior_node = root_node.get();
+    if(!prior_node) {
+        stdlog.err() << "Null ASC" << std::endl;
+        throw OPTIMIZE_ERR;
+    }
+    asc_node* current_node = prior_node->next.get();
+    if(!current_node) return;
+    asc_node* next_node = current_node->next.get();
+    while(next_node){
+        if(prior_node->node_type == loop_start && current_node->node_type == dec_val && next_node->node_type == loop_end){
+            prior_node->node_type = zero_assign;
+            prior_node->next = std::move(next_node->next);
+            current_node = prior_node->next.get();
+            if(!current_node) break;
+            next_node = current_node->next.get();
+        }
+        else {
+            prior_node = current_node;
+            current_node = next_node;
+            next_node = current_node->next.get();
+        }
+    }
+}
+
+void parser::optimize_asc(){
+    if(optimization_level > 0) contract_repeating_nodes();
+    if(optimization_level > 1) zero_loop();
 }
 
 

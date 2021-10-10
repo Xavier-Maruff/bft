@@ -90,6 +90,10 @@ void codegen_c::generate(asc_node* node_) {
 			code_stream_fmt() << "*bf_ptr = getchar();\n";
 		break;
 
+		case zero_assign:
+		code_stream_fmt() << "*bf_ptr = 0;\n";
+		break;
+
 		default:
 		break;
     }

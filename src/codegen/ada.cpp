@@ -89,7 +89,11 @@ void codegen_ada::generate(asc_node* node_) {
 		case get_char:
 		for(size_t i = 0; i < node_->iterations; i++)
 			code_stream_fmt() << "Get(Input_Char_Buffer);\n"
-			<< "Bf_Array(Bf_Ptr) := Character'Pos(Input_Char_Buffer);";
+			<< "Bf_Array(Bf_Ptr) := Character'Pos(Input_Char_Buffer);\n";
+		break;
+
+		case zero_assign:
+		code_stream_fmt() << "Bf_Array(Bf_Ptr) := 0;\n";
 		break;
 
 		default:

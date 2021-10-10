@@ -105,6 +105,10 @@ void codegen_js::generate(asc_node* node_){
 			code_stream_fmt() << "bf_array[bf_ptr] = await getchar();\n";
 		break;
 
+		case zero_assign:
+		code_stream_fmt() << "bf_array[bf_ptr] = 0;\n";
+		break;
+
 		default:
 		break;
     }

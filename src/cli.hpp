@@ -13,7 +13,7 @@ enum compile_target {
 
 typedef struct cli_args {
     bool verbose;
-    bool optimize;
+    uint8_t optimization_level;
     compile_target target;
     std::string source_filename;
     std::string output_filename;

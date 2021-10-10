@@ -18,10 +18,10 @@ std::map<std::string, compile_target> target_from_str = {
 
 cli_args::cli_args():
 verbose(false),
-optimize(true),
+optimization_level(3),
 target(target_c),
 source_filename(),
-output_filename("out.asm"){
+output_filename("out"){
     //
 }
 
@@ -36,6 +36,7 @@ cli_args parse_args(int argc, char* argv[]){
     desc.add_options()
         ("help,h", "show this help message")
         ("verbose,v", "increase verbosity")
+        ("optimize,O", po::value<uint8_t>(), "optimization level (0 - 3)")
         ("output,o", po::value<std::string>(), "output asm file path")
         ("target,t", po::value<std::string>(), "the target language (js, c, rust, c++)")
         ("source,s", po::value<std::string>(), "source bf file path")
@@ -82,6 +83,16 @@ cli_args parse_args(int argc, char* argv[]){
             throw CLI_INVALID_ARGS_ERR;
         }
         retval.target = target_iter->second;
+    }
+
+    if(vm.count("optimize")){
+        uint8_t opt_level = vm["optimize"].as<uint8_t>();
+        if(opt_level > 3) {
+            stdlog.err() << "Invalid optimization level (accept 0 - 3)" << std::endl;
+            std::cout << desc << std::endl;
+            throw CLI_INVALID_ARGS_ERR;
+        }
+        retval.optimization_level = opt_level;
     }
 
     if(vm.count("output")){

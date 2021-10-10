@@ -14,7 +14,8 @@ enum bf_instr {
     loop_start,
     loop_end,
     get_char,
-    put_char
+    put_char,
+    zero_assign
 };
 
 class asc_node {

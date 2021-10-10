@@ -18,12 +18,12 @@ int main(int argc, char* argv[]){
             throw IO_ERR;
         }
 
-        parser bf_parser(args.output_filename);
+        parser bf_parser(args.output_filename, args.optimization_level);
 
         bf_parser.tokenize(&bf_source_file);
         bf_source_file.close();
 
-        if(args.optimize) bf_parser.optimize_asc();
+        bf_parser.optimize_asc();
 
         std::ofstream output_file(args.output_filename);
         if(!output_file.is_open()){

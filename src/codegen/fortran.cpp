@@ -83,7 +83,11 @@ void codegen_fortran::generate(asc_node* node_) {
 		case get_char:
 		for(size_t i = 0; i < node_->iterations; i++)
 			code_stream_fmt() << "read(*, '(a)') input_char_buffer\n"
-			<< "bf_array(bf_ptr) = iachar(input_char_buffer)";
+			<< "bf_array(bf_ptr) = iachar(input_char_buffer)\n";
+		break;
+
+		case zero_assign:
+		code_stream_fmt() << "bf_array(bf_ptr) = 0\n";
 		break;
 
 		default:
