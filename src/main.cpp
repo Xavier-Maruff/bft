@@ -31,7 +31,8 @@ int main(int argc, char* argv[]){
             throw IO_ERR;
         }
 
-        bf_parser.generate_code(args.target, &output_file);
+        if(args.dump_ir) bf_parser.dump_ir(&output_file);
+        else bf_parser.generate_code(args.target, &output_file);
         output_file.close();
 
         return EXIT_SUCCESS;

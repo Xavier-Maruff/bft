@@ -18,6 +18,7 @@ std::map<std::string, compile_target> target_from_str = {
 
 cli_args::cli_args():
 verbose(false),
+dump_ir(false),
 optimization_level(3),
 target(target_c),
 source_filename(),
@@ -36,6 +37,7 @@ cli_args parse_args(int argc, char* argv[]){
     desc.add_options()
         ("help,h", "show this help message")
         ("verbose,v", "increase verbosity")
+        ("dump_ir,d", "dump the ASC IR to the output file (overrides target)")
         ("optimize,O", po::value<int>(), "optimization level (0 - 3)")
         ("output,o", po::value<std::string>(), "output asm file path")
         ("target,t", po::value<std::string>(), "the target language (js, c, rust, c++)")
@@ -65,7 +67,8 @@ cli_args parse_args(int argc, char* argv[]){
         throw CLI_INVALID_ARGS_ERR;
     }
 
-    if(vm.count("verbose")) retval.verbose = true;
+    retval.verbose = vm.count("verbose");
+    retval.dump_ir = vm.count("dump_ir");
 
     if(vm.count("source")){
         retval.source_filename = vm["source"].as<std::string>();

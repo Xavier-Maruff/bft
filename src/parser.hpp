@@ -19,8 +19,7 @@ class parser{
     std::deque<size_t> loop_stack;
 
     void contract_repeating_nodes();
-    void zero_assign_loop();
-    void zero_scan_loop();
+    void zero_loop();
 
 
     public:
@@ -30,6 +29,7 @@ class parser{
     void tokenize(std::istream* input_stream);
     void optimize_asc();
     void generate_code(compile_target code_lang, std::ostream* output_stream);
+    void dump_ir(std::ostream* output_stream);
     
     friend std::ostream& operator<<(std::ostream& os, parser& p);
 };

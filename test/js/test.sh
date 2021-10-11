@@ -4,6 +4,9 @@ set -e
 node hworld.js
 echo "
 "
+#node mandelbrot.js
+#echo "
+#"
 
 #NOTE: JS Mandelbrot test takes a LONG time, better to leave it out until optimization better
 #node mandelbrot.js

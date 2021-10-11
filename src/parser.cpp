@@ -67,6 +67,28 @@ void parser::tokenize(std::istream* input_stream) {
     }
 }
 
+std::map<bf_instr, std::string> reverse_token_map = {
+    {inc_ptr, ">"},
+    {dec_ptr, "<"},
+    {inc_val, "+"},
+    {dec_val, "-"},
+    {loop_start, "["},
+    {loop_end, "]"},
+    {put_char, "."},
+    {get_char, ","},
+    {zero_assign, ":= 0"},
+    {zero_scan_left, "scan_left"},
+    {zero_scan_right, "scan_right"}
+};
+
+void parser::dump_ir(std::ostream* output_stream){
+    asc_node* next_node = root_node->next.get();
+    while(next_node){
+        *output_stream << " " << reverse_token_map[next_node->node_type] << "*" << next_node->iterations << " ";
+        next_node = next_node->next.get();
+    }
+}
+
 void parser::contract_repeating_nodes(){
     asc_node* target_node = root_node.get();
     if(!target_node) {
@@ -96,8 +118,18 @@ void parser::contract_repeating_nodes(){
     }
 }
 
+//TODO: figure out why shifting to this keeps segfaulting??????
+/*inline bool reduce_instr_triple(asc_node* prior_node, asc_node* current_node, asc_node* next_node, bf_instr reductant){
+    prior_node->node_type = reductant;
+    prior_node->next = std::move(next_node->next);
+    current_node = prior_node->next.get();
+    if(!current_node) return true;
+    next_node = current_node->next.get();
+    return false;
+}*/
 
-void parser::zero_assign_loop(){
+
+void parser::zero_loop(){
     asc_node* prior_node = root_node.get();
     if(!prior_node) {
         stdlog.err() << "Null ASC" << std::endl;
@@ -106,18 +138,64 @@ void parser::zero_assign_loop(){
     asc_node* current_node = prior_node->next.get();
     if(!current_node) return;
     asc_node* next_node = current_node->next.get();
-    bool zero_assign_loop = false;
+    bool opt_pattern_matched = false;
+    bool current_cell_no_match = false;
     while(next_node){
-        zero_assign_loop = prior_node->node_type == loop_start
+        //zero loop optimizations
+        if(prior_node->node_type == loop_start && next_node->node_type == loop_end){
+            switch(current_node->node_type){
+                case dec_val:
+                prior_node->node_type = zero_assign;
+                prior_node->next = std::move(next_node->next);
+                current_node = prior_node->next.get();
+                if(!current_node) {
+                    stdlog.warn() << "null current node" << std::endl;
+                    break;
+                }
+                next_node = current_node->next.get();
+                break;
+
+                case inc_val:
+                prior_node->node_type = zero_assign;
+                prior_node->next = std::move(next_node->next);
+                current_node = prior_node->next.get();
+                if(!current_node) {
+                    stdlog.warn() << "null current node" << std::endl;
+                    break;
+                }
+                next_node = current_node->next.get();
+                break;
+
+                //TODO: scan optimization
+                //case dec_ptr:
+                //break;
+
+                //TODO: scan optimization
+                //case inc_ptr:
+                //break;
+
+                default:
+                current_cell_no_match = true;
+                break;
+            }
+            if(current_cell_no_match){
+                prior_node = current_node;
+                current_node = next_node;
+                next_node = current_node->next.get();
+                current_cell_no_match = false;
+            }
+        }
+        //zero assign optimization
+        /*opt_pattern_matched = prior_node->node_type == loop_start
             && (current_node->node_type == dec_val || current_node->node_type == inc_val)
             && next_node->node_type == loop_end;
-        if(zero_assign_loop){
+        if(opt_pattern_matched){
             prior_node->node_type = zero_assign;
             prior_node->next = std::move(next_node->next);
             current_node = prior_node->next.get();
             if(!current_node) break;
             next_node = current_node->next.get();
-        }
+        }*/
         else {
             prior_node = current_node;
             current_node = next_node;
@@ -126,14 +204,9 @@ void parser::zero_assign_loop(){
     }
 }
 
-void parser::zero_scan_loop(){
-    //
-}
-
 void parser::optimize_asc(){
     if(optimization_level > 0) contract_repeating_nodes();
-    if(optimization_level > 1) zero_assign_loop();
-    if(optimization_level > 2) zero_scan_loop();
+    if(optimization_level > 1) zero_loop();
 }
 
 
