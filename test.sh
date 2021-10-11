@@ -21,4 +21,8 @@ Running Fortran target"
 cd ../fortran
 ./test.sh
 echo "
+Running optimization tests with C target"
+cd ../optimize
+./test.sh
+echo "
 Testing finished"

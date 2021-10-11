@@ -9,8 +9,9 @@
 #define ERR_PREFIX "parser -> "
 
 parser::parser(std::string output_filename_, uint8_t optimization_level_) noexcept:
-output_filename(output_filename_), optimization_level(optimization_level){
-    //
+output_filename(output_filename_), optimization_level(optimization_level_){
+    if(!optimization_level)
+        stdlog() << "Skipping optimizations" << std::endl;
 }
 
 parser::~parser() noexcept{
@@ -38,8 +39,6 @@ void parser::tokenize(std::istream* input_stream) {
     while((token = input_stream->get()) != -1){
         auto bf_instr_iter = token_map.find(token);
         if(bf_instr_iter != token_map.end()) {
-            //if(bf_instr_iter->second == loop_start)
-            //    loop_stack.push_back("loop_"+std::to_string(loop_stack.size()));
             switch(bf_instr_iter->second){
                 case loop_start:
                 loop_stack.push_back(loop_stack.size());
@@ -98,7 +97,7 @@ void parser::contract_repeating_nodes(){
 }
 
 
-void parser::zero_loop(){
+void parser::zero_assign_loop(){
     asc_node* prior_node = root_node.get();
     if(!prior_node) {
         stdlog.err() << "Null ASC" << std::endl;
@@ -107,12 +106,12 @@ void parser::zero_loop(){
     asc_node* current_node = prior_node->next.get();
     if(!current_node) return;
     asc_node* next_node = current_node->next.get();
-    bool zero_loop = false;
+    bool zero_assign_loop = false;
     while(next_node){
-        zero_loop = prior_node->node_type == loop_start
+        zero_assign_loop = prior_node->node_type == loop_start
             && (current_node->node_type == dec_val || current_node->node_type == inc_val)
             && next_node->node_type == loop_end;
-        if(zero_loop){
+        if(zero_assign_loop){
             prior_node->node_type = zero_assign;
             prior_node->next = std::move(next_node->next);
             current_node = prior_node->next.get();
@@ -127,9 +126,14 @@ void parser::zero_loop(){
     }
 }
 
+void parser::zero_scan_loop(){
+    //
+}
+
 void parser::optimize_asc(){
     if(optimization_level > 0) contract_repeating_nodes();
-    if(optimization_level > 1) zero_loop();
+    if(optimization_level > 1) zero_assign_loop();
+    if(optimization_level > 2) zero_scan_loop();
 }
 
 
