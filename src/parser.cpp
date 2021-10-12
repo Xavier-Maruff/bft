@@ -118,15 +118,14 @@ void parser::contract_repeating_nodes(){
     }
 }
 
-//TODO: figure out why shifting to this keeps segfaulting??????
-/*inline bool reduce_instr_triple(asc_node* prior_node, asc_node* current_node, asc_node* next_node, bf_instr reductant){
-    prior_node->node_type = reductant;
-    prior_node->next = std::move(next_node->next);
-    current_node = prior_node->next.get();
-    if(!current_node) return true;
-    next_node = current_node->next.get();
-    return false;
-}*/
+inline  void reduce_instr_triple(asc_node** prior_node, asc_node** current_node, asc_node** next_node, bf_instr reductant){
+    (*prior_node)->node_type = reductant;
+    (*prior_node)->next = std::move((*next_node)->next);
+    (*current_node) = (*prior_node)->next.get();
+    if(!current_node) return;
+    (*next_node) = (*current_node)->next.get();
+    return;
+}
 
 
 void parser::zero_loop(){
@@ -145,25 +144,11 @@ void parser::zero_loop(){
         if(prior_node->node_type == loop_start && next_node->node_type == loop_end){
             switch(current_node->node_type){
                 case dec_val:
-                prior_node->node_type = zero_assign;
-                prior_node->next = std::move(next_node->next);
-                current_node = prior_node->next.get();
-                if(!current_node) {
-                    stdlog.warn() << "null current node" << std::endl;
-                    break;
-                }
-                next_node = current_node->next.get();
+                reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
                 break;
 
                 case inc_val:
-                prior_node->node_type = zero_assign;
-                prior_node->next = std::move(next_node->next);
-                current_node = prior_node->next.get();
-                if(!current_node) {
-                    stdlog.warn() << "null current node" << std::endl;
-                    break;
-                }
-                next_node = current_node->next.get();
+                reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
                 break;
 
                 //TODO: scan optimization
@@ -175,27 +160,12 @@ void parser::zero_loop(){
                 //break;
 
                 default:
-                current_cell_no_match = true;
-                break;
-            }
-            if(current_cell_no_match){
                 prior_node = current_node;
                 current_node = next_node;
                 next_node = current_node->next.get();
-                current_cell_no_match = false;
+                break;
             }
         }
-        //zero assign optimization
-        /*opt_pattern_matched = prior_node->node_type == loop_start
-            && (current_node->node_type == dec_val || current_node->node_type == inc_val)
-            && next_node->node_type == loop_end;
-        if(opt_pattern_matched){
-            prior_node->node_type = zero_assign;
-            prior_node->next = std::move(next_node->next);
-            current_node = prior_node->next.get();
-            if(!current_node) break;
-            next_node = current_node->next.get();
-        }*/
         else {
             prior_node = current_node;
             current_node = next_node;
