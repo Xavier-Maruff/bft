@@ -9,11 +9,22 @@
 #define BF_ARRAY_SIZE 30000
 #define ERR_PREFIX "C backend -> "
 
+const std::string bf_array_size_str = std::to_string(BF_ARRAY_SIZE);
+
 std::pair<std::string, std::string> codegen_c::skeleton = {
     R"(#include <stdio.h>
+#include <string.h>
+
+int *scan_left(const int* scan_space, int search_term, size_t scan_length){
+    int* s = (int*)scan_space;
+	while(scan_length--){
+		if(*s == search_term) scan_space-scan_length;
+		else s--;
+	}
+}
 
 int main(int argc, char* argv[]){
-	int bf_array[)"+std::to_string(BF_ARRAY_SIZE)+R"(] = {0};
+	int bf_array[)"+bf_array_size_str+R"(] = {0};
 	int* bf_ptr = bf_array;
 	)",
 	R"(

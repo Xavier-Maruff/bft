@@ -30,7 +30,8 @@ std::map<char, bf_instr> token_map = {
 };
 
 void parser::tokenize(std::istream* input_stream) {
-    root_node = std::make_unique<asc_node>(no_op);
+    size_t location = 0;
+    root_node = std::make_unique<asc_node>(no_op, location);
     asc_node* next_node = root_node.get();
 
     size_t unmatched_loop = 0;
@@ -52,7 +53,7 @@ void parser::tokenize(std::istream* input_stream) {
                 default:
                 break;
             }
-            next_node->next = std::make_unique<asc_node>(bf_instr_iter->second);
+            next_node->next = std::make_unique<asc_node>(bf_instr_iter->second, ++location);
             next_node = next_node->next.get();
         }
     }
@@ -77,8 +78,6 @@ std::map<bf_instr, std::string> reverse_token_map = {
     {put_char, "."},
     {get_char, ","},
     {zero_assign, ":= 0"},
-    {zero_scan_left, "scan_left"},
-    {zero_scan_right, "scan_right"}
 };
 
 void parser::dump_ir(std::ostream* output_stream){
@@ -118,13 +117,22 @@ void parser::contract_repeating_nodes(){
     }
 }
 
-inline  void reduce_instr_triple(asc_node** prior_node, asc_node** current_node, asc_node** next_node, bf_instr reductant){
+inline bool reduce_instr_triple(asc_node** prior_node, asc_node** current_node, asc_node** next_node, bf_instr reductant){
     (*prior_node)->node_type = reductant;
     (*prior_node)->next = std::move((*next_node)->next);
     (*current_node) = (*prior_node)->next.get();
-    if(!current_node) return;
+    if(!(*current_node)) {
+        //stdlog.err() << ERR_PREFIX << "Nullptr current node with prior location " << (*prior_node)->location << std::endl;
+        //throw PARSE_ERR;
+        return false;
+    };
     (*next_node) = (*current_node)->next.get();
-    return;
+    if(!(*next_node)) {
+        //stdlog.err() << ERR_PREFIX << "Nullptr next node at current location "  << (*current_node)->location << std::endl;
+        //throw PARSE_ERR;
+        return false;
+    }
+    return true;
 }
 
 
@@ -137,32 +145,29 @@ void parser::zero_loop(){
     asc_node* current_node = prior_node->next.get();
     if(!current_node) return;
     asc_node* next_node = current_node->next.get();
-    bool opt_pattern_matched = false;
-    bool current_cell_no_match = false;
+    asc_node* node_buffer;
+    bool end_of_chain = false;
+    size_t jump_size = 0;
     while(next_node){
         //zero loop optimizations
         if(prior_node->node_type == loop_start && next_node->node_type == loop_end){
             switch(current_node->node_type){
                 case dec_val:
-                reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
+                end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
                 break;
 
                 case inc_val:
-                reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
+                end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
                 break;
-
-                //TODO: scan optimization
-                //case dec_ptr:
-                //break;
-
-                //TODO: scan optimization
-                //case inc_ptr:
-                //break;
-
+                
                 default:
                 prior_node = current_node;
                 current_node = next_node;
                 next_node = current_node->next.get();
+                break;
+            }
+            if(end_of_chain){
+                end_of_chain = false;
                 break;
             }
         }

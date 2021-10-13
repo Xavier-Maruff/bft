@@ -3,10 +3,10 @@
 ../../build_Debug/bin/bft benchmark.bf -o benchmark_2.c --optimize=2 -t c -v
 ../../build_Debug/bin/bft benchmark.bf -o benchmark_3.c --optimize=3 -t c -v
 
-gcc ./benchmark_0.c -o benchmark_0
-gcc ./benchmark_1.c -o benchmark_1
-gcc ./benchmark_2.c -o benchmark_2
-gcc ./benchmark_3.c -o benchmark_3
+gcc -g ./benchmark_0.c -o benchmark_0
+gcc -g ./benchmark_1.c -o benchmark_1
+gcc -g ./benchmark_2.c -o benchmark_2
+gcc -g ./benchmark_3.c -o benchmark_3
 
 echo "Optimization level: 0"
 time ./benchmark_0

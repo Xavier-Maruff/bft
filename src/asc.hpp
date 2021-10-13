@@ -16,8 +16,6 @@ enum bf_instr {
     get_char,
     put_char,
     zero_assign,
-    zero_scan_right,
-    zero_scan_left
 };
 
 class asc_node {
@@ -25,9 +23,15 @@ class asc_node {
     std::unique_ptr<asc_node> next;
     size_t iterations;
     bf_instr node_type;
+    size_t location;
 
-    asc_node(bf_instr node_type_);
+    asc_node(bf_instr node_type_, size_t location_);
     ~asc_node();
 };
+
+extern asc_node loop_start_dummy;
+extern asc_node loop_end_dummy;
+extern asc_node dec_ptr_dummy;
+extern asc_node inc_ptr_dummy;
 
 #endif
