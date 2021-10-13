@@ -105,6 +105,22 @@ void codegen_c::generate(asc_node* node_) {
 		code_stream_fmt() << "*bf_ptr = 0;\n";
 		break;
 
+		case zero_scan_left:
+		//TODO: actually implement this
+		generate(&loop_start_dummy);
+		dec_ptr_dummy.iterations = node_->iterations;		
+		generate(&dec_ptr_dummy);
+		generate(&loop_end_dummy);
+		break;
+
+		case zero_scan_right:
+		//TODO: actually implement this
+		generate(&loop_start_dummy);
+		inc_ptr_dummy.iterations = node_->iterations;
+		generate(&inc_ptr_dummy);
+		generate(&loop_end_dummy);
+		break;
+
 		default:
 		break;
     }

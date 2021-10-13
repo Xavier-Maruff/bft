@@ -78,6 +78,8 @@ std::map<bf_instr, std::string> reverse_token_map = {
     {put_char, "."},
     {get_char, ","},
     {zero_assign, ":= 0"},
+    {zero_scan_left, "scan_left"},
+    {zero_scan_right, "scan_right"}
 };
 
 void parser::dump_ir(std::ostream* output_stream){
@@ -158,6 +160,18 @@ void parser::zero_loop(){
 
                 case inc_val:
                 end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
+                break;
+
+                case dec_ptr:
+                jump_size = current_node->iterations;
+                end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_scan_left);
+                prior_node->iterations = jump_size;
+                break;
+
+                case inc_ptr:
+                jump_size = current_node->iterations;
+                end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_scan_right);
+                prior_node->iterations = jump_size;
                 break;
                 
                 default:
