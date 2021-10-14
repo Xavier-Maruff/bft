@@ -1,11 +1,11 @@
 # 🧠 bft
 ## A multi-target brainf*ck transpiler
 bft is an optimizing modular brainf*ck transpiler which currently has backends for:
-* C (--target=c)
-* JavaScript for the NodeJS runtime (--target=js)
-* Rust (--target=rust)
-* Ada (--target=ada)
-* Fortran 90 (--target=fortran)
+* C (`--target=c`)
+* JavaScript for the NodeJS runtime (`--target=js`)
+* Rust (`--target=rust`)
+* Ada (`--target=ada`)
+* Fortran 90 (`--target=fortran`)
 
 ## Command line options
 bft accepts the following command-line arguments:
