@@ -5,6 +5,7 @@
 #include "log.hpp"
 #include "err_codes.h"
 #include "codegen.hpp"
+#include "colours.h"
 
 #define ERR_PREFIX "parser -> "
 
@@ -30,6 +31,8 @@ std::map<char, bf_instr> token_map = {
 };
 
 void parser::tokenize(std::istream* input_stream) {
+    stdlog() << "Constructing ASC" << std::endl;
+
     size_t location = 0;
     root_node = std::make_unique<asc_node>(no_op, location);
     asc_node* next_node = root_node.get();
@@ -59,11 +62,11 @@ void parser::tokenize(std::istream* input_stream) {
     }
 
     if(unmatched_loop < 0) {
-        stdlog.err() << "Unexpected loop ending" << std::endl;
+        stdlog.err() << ERR_PREFIX << "Unexpected loop ending" << std::endl;
         throw PARSE_ERR;
     }
     else if(unmatched_loop > 0){
-        stdlog.err() << "Unmatched loop start" << std::endl;
+        stdlog.err() << ERR_PREFIX << "Unmatched loop start" << std::endl;
         throw PARSE_ERR;
     }
 }
@@ -83,9 +86,14 @@ std::map<bf_instr, std::string> reverse_token_map = {
 };
 
 void parser::dump_ir(std::ostream* output_stream){
+    stdlog() << "Dumping IR" << std::endl;
     asc_node* next_node = root_node->next.get();
+    size_t indent_level = 0;
     while(next_node){
-        *output_stream << " " << reverse_token_map[next_node->node_type] << "*" << next_node->iterations << " ";
+        *output_stream << std::string(indent_level, '\t')
+        << reverse_token_map[next_node->node_type] << "*" << next_node->iterations << std::endl;
+        if(next_node->node_type == loop_start) indent_level++;
+        else if(next_node->node_type == loop_end) indent_level--;
         next_node = next_node->next.get();
     }
 }
@@ -98,6 +106,7 @@ void parser::contract_repeating_nodes(){
     }
     asc_node* next_node = target_node->next.get();
     bf_instr target_node_type = target_node->node_type;
+    bool opposing_ops = false;
     while(next_node){
         if(next_node->node_type == target_node_type){
             target_node->iterations++;
@@ -114,7 +123,51 @@ void parser::contract_repeating_nodes(){
                 target_node_type = target_node->node_type;
             }
             if(!target_node) break;
+
         }
+        next_node = target_node->next.get();
+    }
+}
+
+void parser::cancel_opposing_ops(){
+    asc_node* prior_node = root_node.get();
+    asc_node* target_node = root_node.get();
+    if(!target_node) {
+        stdlog.err() << "Null ASC" << std::endl;
+        throw OPTIMIZE_ERR;
+    }
+    asc_node* next_node = target_node->next.get();
+    bf_instr target_node_type = target_node->node_type;
+    bool opposing_ops = false;
+    bool null_next = false;
+    while(next_node){
+        opposing_ops = target_node->node_type == dec_ptr && next_node->node_type == inc_ptr
+        || target_node->node_type == inc_ptr && next_node->node_type == dec_ptr
+        || target_node->node_type == dec_val && next_node->node_type == inc_val
+        || target_node->node_type == inc_val && next_node->node_type == dec_val;
+        if(opposing_ops){
+            opposing_ops = false;
+            if(target_node->iterations == next_node->iterations){
+                if(!next_node->next) break;
+                prior_node->next = std::move(next_node->next);
+                target_node = prior_node;
+                next_node = prior_node->next.get();
+            }
+            else if(target_node->iterations > next_node->iterations){
+                target_node->iterations -= next_node->iterations;
+            }
+            else {
+                target_node->iterations = next_node->iterations-target_node->iterations;
+                target_node->location = next_node->location;
+                target_node->node_type = next_node->node_type;
+            }
+            if(!next_node->next) break;
+            target_node->next = std::move(next_node->next);
+        }
+
+        prior_node = target_node;
+        target_node = target_node->next.get();
+        if(!target_node->next) break;
         next_node = target_node->next.get();
     }
 }
@@ -123,17 +176,9 @@ inline bool reduce_instr_triple(asc_node** prior_node, asc_node** current_node, 
     (*prior_node)->node_type = reductant;
     (*prior_node)->next = std::move((*next_node)->next);
     (*current_node) = (*prior_node)->next.get();
-    if(!(*current_node)) {
-        //stdlog.err() << ERR_PREFIX << "Nullptr current node with prior location " << (*prior_node)->location << std::endl;
-        //throw PARSE_ERR;
-        return false;
-    };
+    if(!(*current_node)) return false;
     (*next_node) = (*current_node)->next.get();
-    if(!(*next_node)) {
-        //stdlog.err() << ERR_PREFIX << "Nullptr next node at current location "  << (*current_node)->location << std::endl;
-        //throw PARSE_ERR;
-        return false;
-    }
+    if(!(*next_node)) return false;
     return true;
 }
 
@@ -151,7 +196,6 @@ void parser::zero_loop(){
     bool end_of_chain = false;
     size_t jump_size = 0;
     while(next_node){
-        //zero loop optimizations
         if(prior_node->node_type == loop_start && next_node->node_type == loop_end){
             switch(current_node->node_type){
                 case dec_val:
@@ -194,9 +238,27 @@ void parser::zero_loop(){
 }
 
 void parser::optimize_asc(){
-    if(optimization_level > 0) contract_repeating_nodes();
-    if(optimization_level > 1) zero_loop();
+    if(optimization_level > 0) {
+        stdlog() << "Contracting repeating nodes" << std::endl;
+        contract_repeating_nodes();
+    }
+    if(optimization_level > 1){
+        stdlog() << "Cancelling opposing operations" << std::endl;
+        cancel_opposing_ops();
+    }
+    if(optimization_level > 2) {
+        stdlog() << "Flattening out zero assignment loops" << std::endl;
+        zero_loop();
+    }
 }
+
+std::map<compile_target, std::string> target_name_map = {
+    {target_c, "c"},
+    {target_ada, "ada"},
+    {target_fortran, "fortran 90"},
+    {target_js, "javascript"},
+    {target_rust, "rust"}
+};
 
 
 void parser::generate_code(compile_target code_lang, std::ostream* output_stream){
@@ -228,9 +290,11 @@ void parser::generate_code(compile_target code_lang, std::ostream* output_stream
         break;
     }
 
+    stdlog() << "Piping ASC through " << target_name_map[code_lang] << " backend" << std::endl;
     asc_node* next_node = root_node.get();
     while(next_node){
-        backend->generate(next_node);
+        if(next_node->iterations > 0)
+            backend->generate(next_node);
         next_node = next_node->next.get();
     }
     backend->dump_code(output_stream);

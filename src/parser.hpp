@@ -19,6 +19,7 @@ class parser{
     std::deque<size_t> loop_stack;
 
     void contract_repeating_nodes();
+    void cancel_opposing_ops();
     void zero_loop();
 
 
