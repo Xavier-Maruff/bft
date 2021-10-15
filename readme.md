@@ -14,6 +14,7 @@ bft accepts the following command-line arguments:
 * `--verbose, -v` → increases the logging verbosity
 * `--output={output file}, -o {output file}` → the transpiled output file
 * `--help, -h` → displays the options guide
+* `--optimize={0 - 3}, -O {0 - 3}` → how aggressively the transpiler should optimize the brainf*ck. If not specified, defaults to `3`
 
 ## Building
 Dependencies:
