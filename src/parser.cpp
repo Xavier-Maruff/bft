@@ -19,6 +19,7 @@ parser::~parser() noexcept{
     //
 }
 
+//maps token char to bf instruction enum
 std::map<char, bf_instr> token_map = {
     {'>', inc_ptr},
     {'<', dec_ptr},
@@ -30,6 +31,7 @@ std::map<char, bf_instr> token_map = {
     {',', get_char},
 };
 
+//tokenizes stream of characters
 void parser::tokenize(std::istream* input_stream) {
     stdlog() << "Constructing ASC" << std::endl;
 
@@ -71,6 +73,7 @@ void parser::tokenize(std::istream* input_stream) {
     }
 }
 
+//maps bf instructions to strings
 std::map<bf_instr, std::string> reverse_token_map = {
     {inc_ptr, ">"},
     {dec_ptr, "<"},
@@ -85,7 +88,12 @@ std::map<bf_instr, std::string> reverse_token_map = {
     {zero_scan_right, "scan_right"}
 };
 
+//dumps IR to an output stream
 void parser::dump_ir(std::ostream* output_stream){
+    if(!output_stream) {
+        stdlog.err() << "Could not dump IR - nullptr output stream" << std::endl;
+        throw MEM_ERR;
+    }
     stdlog() << "Dumping IR" << std::endl;
     asc_node* next_node = root_node->next.get();
     size_t indent_level = 0;
@@ -98,6 +106,7 @@ void parser::dump_ir(std::ostream* output_stream){
     }
 }
 
+//resolves repeating nodes of the same type into single nodes with >1 iteration values
 void parser::contract_repeating_nodes(){
     asc_node* target_node = root_node.get();
     if(!target_node) {
@@ -129,6 +138,7 @@ void parser::contract_repeating_nodes(){
     }
 }
 
+//cancels opposing operations, like +*3 -*2 -> +*1
 void parser::cancel_opposing_ops(){
     asc_node* prior_node = root_node.get();
     asc_node* target_node = root_node.get();
@@ -141,30 +151,36 @@ void parser::cancel_opposing_ops(){
     bool opposing_ops = false;
     bool null_next = false;
     while(next_node){
+        //check if opposing operations (+/-, >/<)
         opposing_ops = target_node->node_type == dec_ptr && next_node->node_type == inc_ptr
         || target_node->node_type == inc_ptr && next_node->node_type == dec_ptr
         || target_node->node_type == dec_val && next_node->node_type == inc_val
         || target_node->node_type == inc_val && next_node->node_type == dec_val;
         if(opposing_ops){
             opposing_ops = false;
+            //if the iterations fully cancel, ditch the target and next nodes
             if(target_node->iterations == next_node->iterations){
                 if(!next_node->next) break;
                 prior_node->next = std::move(next_node->next);
                 target_node = prior_node;
                 next_node = prior_node->next.get();
             }
+            //subtract the iterations
             else if(target_node->iterations > next_node->iterations){
                 target_node->iterations -= next_node->iterations;
             }
+            //defer to the next node, subtract target iterations
             else {
                 target_node->iterations = next_node->iterations-target_node->iterations;
                 target_node->location = next_node->location;
                 target_node->node_type = next_node->node_type;
             }
             if(!next_node->next) break;
+            //ditch the next node
             target_node->next = std::move(next_node->next);
         }
 
+        //move along the asc
         prior_node = target_node;
         target_node = target_node->next.get();
         if(!target_node->next) break;
@@ -172,17 +188,22 @@ void parser::cancel_opposing_ops(){
     }
 }
 
+
+//reduces three asc nodes to the first node, with a target type
 inline bool reduce_instr_triple(asc_node** prior_node, asc_node** current_node, asc_node** next_node, bf_instr reductant){
     (*prior_node)->node_type = reductant;
+    //move next_node->next into prior_node->next
     (*prior_node)->next = std::move((*next_node)->next);
+    //current node is next_node->next
     (*current_node) = (*prior_node)->next.get();
     if(!(*current_node)) return false;
+    //next node is current_node->next
     (*next_node) = (*current_node)->next.get();
     if(!(*next_node)) return false;
     return true;
 }
 
-
+//flattens zero assignment loops, i.e. [-] or [+] -> *bf_ptr = 0, and zero scan loops (to be implemented)
 void parser::zero_loop(){
     asc_node* prior_node = root_node.get();
     if(!prior_node) {
@@ -192,32 +213,38 @@ void parser::zero_loop(){
     asc_node* current_node = prior_node->next.get();
     if(!current_node) return;
     asc_node* next_node = current_node->next.get();
-    asc_node* node_buffer;
     bool end_of_chain = false;
+    //jump size will be utilized when zero scan loop optimization is added
     size_t jump_size = 0;
     while(next_node){
+        //if chain context matches three node [*] pattern
         if(prior_node->node_type == loop_start && next_node->node_type == loop_end){
             switch(current_node->node_type){
+                //reduce chain context to one zero assign instruction
                 case dec_val:
                 end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
                 break;
 
+                //reduce chain context to one zero assign instruction
                 case inc_val:
                 end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_assign);
                 break;
 
+                //currently not properly implemented in any of the backends, should be soon
                 case dec_ptr:
                 jump_size = current_node->iterations;
                 end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_scan_left);
                 prior_node->iterations = jump_size;
                 break;
 
+                //currently not properly implemented in any of the backends, should be soon
                 case inc_ptr:
                 jump_size = current_node->iterations;
                 end_of_chain = reduce_instr_triple(&prior_node, &current_node, &next_node, zero_scan_right);
                 prior_node->iterations = jump_size;
                 break;
                 
+                //not a zero loop
                 default:
                 prior_node = current_node;
                 current_node = next_node;
@@ -237,6 +264,7 @@ void parser::zero_loop(){
     }
 }
 
+//run the optimizations
 void parser::optimize_asc(){
     if(optimization_level > 0) {
         stdlog() << "Contracting repeating nodes" << std::endl;
@@ -247,7 +275,7 @@ void parser::optimize_asc(){
         cancel_opposing_ops();
     }
     if(optimization_level > 2) {
-        stdlog() << "Flattening out zero assignment loops" << std::endl;
+        stdlog() << "Flattening zero assignment loops" << std::endl;
         zero_loop();
     }
 }
@@ -261,6 +289,7 @@ std::map<compile_target, std::string> target_name_map = {
 };
 
 
+//pipe asc through a codegen backend
 void parser::generate_code(compile_target code_lang, std::ostream* output_stream){
     std::unique_ptr<codegen> backend;
     switch(code_lang){
@@ -293,6 +322,7 @@ void parser::generate_code(compile_target code_lang, std::ostream* output_stream
     stdlog() << "Piping ASC through " << target_name_map[code_lang] << " backend" << std::endl;
     asc_node* next_node = root_node.get();
     while(next_node){
+        //shouldn't be any iters = 0 nodes in the chain, just a failsafe
         if(next_node->iterations > 0)
             backend->generate(next_node);
         next_node = next_node->next.get();

@@ -42,3 +42,4 @@ echo "
 Optimization level: 3"
 time ./benchmark_3
 rm -rf benchmark_*
+
