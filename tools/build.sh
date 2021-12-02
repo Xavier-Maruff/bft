@@ -1,6 +1,4 @@
 #!/bin/bash
-BASEDIR=$(dirname $0)
-
 
 if [ -z ${1+x} ]; then
     mkdir build
@@ -17,4 +15,4 @@ else
 fi
 
 make
-cd $BASEDIR
+cd ..

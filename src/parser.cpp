@@ -152,10 +152,11 @@ void parser::cancel_opposing_ops(){
     bool null_next = false;
     while(next_node){
         //check if opposing operations (+/-, >/<)
-        opposing_ops = target_node->node_type == dec_ptr && next_node->node_type == inc_ptr
-        || target_node->node_type == inc_ptr && next_node->node_type == dec_ptr
-        || target_node->node_type == dec_val && next_node->node_type == inc_val
-        || target_node->node_type == inc_val && next_node->node_type == dec_val;
+        opposing_ops =
+           (target_node->node_type == dec_ptr && next_node->node_type == inc_ptr)
+        || (target_node->node_type == inc_ptr && next_node->node_type == dec_ptr)
+        || (target_node->node_type == dec_val && next_node->node_type == inc_val)
+        || (target_node->node_type == inc_val && next_node->node_type == dec_val);
         if(opposing_ops){
             opposing_ops = false;
             //if the iterations fully cancel, ditch the target and next nodes

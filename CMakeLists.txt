@@ -13,22 +13,27 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-include_directories(${CMAKE_BINARY_DIR}/src)
+set(bft_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(bft_src
+    ${bft_src_dir}/main.cpp
+    ${bft_src_dir}/parser.cpp
+    ${bft_src_dir}/asc.cpp
+    ${bft_src_dir}/log.cpp
+    ${bft_src_dir}/cli.cpp
+    ${bft_src_dir}/codegen/codegen.cpp
+    ${bft_src_dir}/codegen/c.cpp
+    ${bft_src_dir}/codegen/js.cpp
+    ${bft_src_dir}/codegen/rust.cpp
+    ${bft_src_dir}/codegen/ada.cpp
+    ${bft_src_dir}/codegen/fortran.cpp
+)
+
+#include_directories(${CMAKE_BINARY_DIR}/src)
 
 find_package(Boost COMPONENTS program_options REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
-link_libraries(${Boost_LIBRARIES})
+#include_directories(${Boost_INCLUDE_DIR})
+#link_libraries(${Boost_LIBRARIES})
 
-add_executable(bft
-    ${CMAKE_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_SOURCE_DIR}/src/parser.cpp
-    ${CMAKE_SOURCE_DIR}/src/asc.cpp
-    ${CMAKE_SOURCE_DIR}/src/log.cpp
-    ${CMAKE_SOURCE_DIR}/src/cli.cpp
-    ${CMAKE_SOURCE_DIR}/src/codegen/codegen.cpp
-    ${CMAKE_SOURCE_DIR}/src/codegen/c.cpp
-    ${CMAKE_SOURCE_DIR}/src/codegen/js.cpp
-    ${CMAKE_SOURCE_DIR}/src/codegen/rust.cpp
-    ${CMAKE_SOURCE_DIR}/src/codegen/ada.cpp
-    ${CMAKE_SOURCE_DIR}/src/codegen/fortran.cpp
-)
+add_executable(bft ${bft_src})
+target_include_directories(bft PUBLIC ${bft_src_dir} ${Boost_INCLUDE_DIR})
+target_link_libraries(bft ${Boost_LIBRARIES})

@@ -3,13 +3,13 @@
 
 #include <string>
 
-enum compile_target {
+typedef enum compile_target {
     target_js,
     target_c,
     target_rust,
     target_ada,
     target_fortran
-};
+} compile_target;
 
 typedef struct cli_args {
     bool verbose;

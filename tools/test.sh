@@ -1,6 +1,6 @@
 set -e
 echo "Building..."
-./build.sh Debug
+./tools/build.sh Debug
 echo "Running C target"
 cd test/c
 ./test.sh
